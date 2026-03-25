@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23080c14'/%3E%3Crect x='42' y='10' width='16' height='80' rx='6' fill='%23f4af1c'/%3E%3Crect x='15' y='28' width='70' height='16' rx='6' fill='%23f4af1c'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23080c14'/%3E%3Crect x='42' y='10' width='16' height='80' rx='6' fill='%23f4af1c'/%3E%3Crect x='15' y='28' width='70' height='16' rx='6' fill='%23f4af1c'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peace Church Online — Growth Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+  @font-face {
+    font-family: 'SSNicksonOne';
+    src: url('fonts/S_S_Nickson_One.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+
+  :root {
+    --bg-deep:    #080c14;
+    --bg-card:    #0d1526;
+    --bg-raised:  #111d35;
+    --border:     #1e3a5f;
+    --accent:     #e94560;
+    --gold:       #f5a623;
+    --teal:       #00c9a7;
+    --blue:       #4a9eff;
+    --purple:     #9b59b6;
+    --text:       #e8f4fd;
+    --muted:      #6b8cae;
+    --success:    #27ae60;
+    --danger:     #e74c3c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  h1, h2, h3, h4, h5, h6 { font-family: 'Inter', sans-serif; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(233,69,96,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(74,158,255,0.06) 0%, transparent 50%);
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(13,21,38,0.95) 0%, rgba(8,12,20,0.98) 100%);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .logo {
+    display: flex; align-items: center; gap: 16px;
+  }
+  .cross {
+    width: 36px; height: 36px; position: relative;
+    flex-shrink: 0;
+  }
+  .cross::before {
+    content: '✝';
+    font-size: 28px;
+    color: #f4af1c;
+    text-shadow: 0 0 20px rgba(244,175,28,0.5);
+  }
+  h1 {
+    font-family: 'SSNicksonOne', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.05em;
+  }
+  h1 span { color: #f4af1c; }
+  .header-meta {
+    text-align: right;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  
+
+  /* ── MAIN ── */
+  main { padding: 24px 40px 60px; }
+
+  /* ── LOADING ── */
+  #loading {
+    text-align: center; padding: 80px;
+    display: none;
+  }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── ERROR ── */
+  #error-msg {
+    background: rgba(231,76,60,0.12);
+    border: 1px solid rgba(231,76,60,0.4);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: none;
+    color: #e74c3c;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* ── SECTION TITLES ── */
+  .section-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #f4af1c;
+    margin: 32px 0 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* ── STAT CARDS ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(233,69,96,0.3);
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.yt::before   { background: #ff0000; }
+  .stat-card.ig::before   { background: linear-gradient(90deg, #833ab4, #fd1d1d, #fcb045); }
+  .stat-card.fb::before   { background: #1877f2; }
+  .stat-card.dc::before   { background: #5865f2; }
+  .stat-card.em::before   { background: var(--teal); }
+  .stat-card.gi::before   { background: var(--gold); }
+  .stat-card.pt::before   { background: var(--purple); }
+
+  .stat-icon {
+    font-size: 20px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-growth {
+    font-size: 12px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .stat-growth.pos { color: var(--success); }
+  .stat-growth.neg { color: var(--danger); }
+  .stat-growth.neu { color: var(--muted); }
+
+  /* ── CHARTS ── */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .chart-grid.full { grid-template-columns: 1fr; }
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .chart-card h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+    font-family: 'Inter', sans-serif;
+  }
+  .chart-card p {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 240px;
+  }
+
+  /* ── MESSAGE TABLE ── */
+  .table-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .table-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-header h3 { font-size: 13px; font-weight: 600; margin-bottom: 4px; font-family: 'Inter', sans-serif; }
+  .table-header p  { font-size: 11px; color: var(--muted); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    background: var(--bg-raised);
+    font-weight: 500;
+  }
+  td {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(30,58,95,0.5);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  tr:hover td { background: rgba(74,158,255,0.04); }
+  .rank-badge {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .rank-1 { background: rgba(245,166,35,0.2); color: var(--gold); }
+  .rank-2 { background: rgba(189,195,199,0.2); color: #bdc3c7; }
+  .rank-3 { background: rgba(205,127,50,0.2); color: #cd7f32; }
+  .rank-n { background: rgba(107,140,174,0.15); color: var(--muted); }
+  .growth-pill {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 3px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .growth-pill.pos { background: rgba(39,174,96,0.15); color: var(--success); }
+  .growth-pill.neg { background: rgba(231,76,60,0.15); color: var(--danger); }
+  .growth-pill.neu { background: rgba(107,140,174,0.1); color: var(--muted); }
+
+  /* ── PRODUCTION INSIGHT ── */
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .insight-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+  .insight-val {
+    font-size: 32px;
+    font-weight: 600;
+    margin: 8px 0 4px;
+  }
+  .insight-label { font-size: 11px; color: var(--muted); }
+  .insight-sub   { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  footer span { color: var(--accent); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    header { padding: 20px; }
+    main   { padding: 16px 20px 40px; }
+    .chart-grid { grid-template-columns: 1fr; }
+    .insight-grid { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="cross"></div>
+    <div>
+      <h1>Peace Church <span>Online</span></h1>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:0.05em;">Ministry Growth Dashboard</div>
+    </div>
+  </div>
+  <div style="display:flex; align-items:center; gap:16px;">
+    <div class="header-meta">
+      <div><span class="status-dot"></span><span id="status-text">Connecting…</span></div>
+      <div id="last-updated" style="margin-top:4px;">—</div>
+    </div>
+    <button onclick="loadData()"
+      style="background:var(--bg-raised); border:1px solid var(--border); border-radius:8px; padding:8px 16px; color:var(--text); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:border-color 0.2s;"
+      onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      ↻ Refresh
+    </button>
+  </div>
+</header>
+
+
+
+<main>
+  <div id="loading">
+    <div class="spinner"></div>
+    <div style="color:var(--muted);font-size:14px;">Loading your ministry data…</div>
+  </div>
+  <div id="error-msg"></div>
+  <div id="dashboard" style="display:none;">
+
+    <!-- PLATFORM TOTALS -->
+    <div class="section-title">Platform Overview</div>
+    <div class="stat-grid">
+      <div class="stat-card yt">
+        <span class="stat-icon">▶️</span>
+        <div class="stat-label">YouTube Subscribers</div>
+        <div class="stat-value" id="s-yt-subs">—</div>
+        <div class="stat-growth" id="g-yt-subs">—</div>
+      </div>
+      <div class="stat-card ig">
+        <span class="stat-icon">📸</span>
+        <div class="stat-label">Instagram Followers</div>
+        <div class="stat-value" id="s-ig">—</div>
+        <div class="stat-growth" id="g-ig">—</div>
+      </div>
+      <div class="stat-card fb">
+        <span class="stat-icon">👥</span>
+        <div class="stat-label">Facebook Followers</div>
+        <div class="stat-value" id="s-fb">—</div>
+        <div class="stat-growth" id="g-fb">—</div>
+      </div>
+      <div class="stat-card dc">
+        <span class="stat-icon">💬</span>
+        <div class="stat-label">Discord Members</div>
+        <div class="stat-value" id="s-dc">—</div>
+        <div class="stat-growth" id="g-dc">—</div>
+      </div>
+      <div class="stat-card em">
+        <span class="stat-icon">📧</span>
+        <div class="stat-label">Email Subscribers</div>
+        <div class="stat-value" id="s-em">—</div>
+        <div class="stat-growth" id="g-em">—</div>
+      </div>
+      <div class="stat-card gi">
+        <span class="stat-icon">🙏</span>
+        <div class="stat-label">Total Giving (All Time)</div>
+        <div class="stat-value" id="s-give">—</div>
+        <div class="stat-growth" id="g-give">—</div>
+      </div>
+      <div class="stat-card pt">
+        <span class="stat-icon">⏱️</span>
+        <div class="stat-label">Avg Production Time</div>
+        <div class="stat-value" id="s-prod">—</div>
+        <div class="stat-growth" id="g-prod">hrs / week</div>
+      </div>
+      <div class="stat-card yt">
+        <span class="stat-icon">▶️</span>
+        <div class="stat-label">7-Day Video Views</div>
+        <div class="stat-value" id="s-ytvidviews">—</div>
+        <div class="stat-growth" id="g-ytvidviews">this week</div>
+      </div>
+      <div class="stat-card yt">
+        <span class="stat-icon">🩳</span>
+        <div class="stat-label">7-Day Shorts Views</div>
+        <div class="stat-value" id="s-shorts">—</div>
+        <div class="stat-growth" id="g-shorts">this week</div>
+      </div>
+      <div class="stat-card yt">
+        <span class="stat-icon">👍</span>
+        <div class="stat-label">7-Day Channel Likes</div>
+        <div class="stat-value" id="s-ytlikes">—</div>
+        <div class="stat-growth" id="g-ytlikes">this week</div>
+      </div>
+      <div class="stat-card ig">
+        <span class="stat-icon">❤️</span>
+        <div class="stat-label">Instagram Likes</div>
+        <div class="stat-value" id="s-iglikes">—</div>
+        <div class="stat-growth" id="g-iglikes">this week</div>
+      </div>
+      <div class="stat-card em">
+        <span class="stat-icon">📬</span>
+        <div class="stat-label">Email Open Rate</div>
+        <div class="stat-value" id="s-emailopen">—</div>
+        <div class="stat-growth" id="g-emailopen">latest send</div>
+      </div>
+      <div class="stat-card yt">
+        <span class="stat-icon">⏱️</span>
+        <div class="stat-label">Avg Watch Time — All YouTube</div>
+        <div class="stat-value" id="s-wtall">—</div>
+        <div class="stat-growth" id="g-wtall">mins this week</div>
+      </div>
+    </div>
+
+    <!-- GROWTH CHARTS -->
+    <div class="section-title">Growth Over Time</div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>Subscriber / Follower Growth</h3>
+        <p>Week-over-week platform growth</p>
+        <div class="chart-wrap"><canvas id="chart-growth"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Video Views</h3>
+        <p>YouTube full service + message-only views</p>
+        <div class="chart-wrap"><canvas id="chart-views"></canvas></div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>Giving Over Time</h3>
+        <p>Weekly offering linked to each message</p>
+        <div class="chart-wrap"><canvas id="chart-giving"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Production Time Trend</h3>
+        <p>Hours spent creating content — are you getting faster?</p>
+        <div class="chart-wrap"><canvas id="chart-prod"></canvas></div>
+      </div>
+    </div>
+
+    <!-- MESSAGE PERFORMANCE -->
+    <div class="section-title">Message Performance</div>
+    <div class="table-card">
+      <div class="table-header">
+        <h3>Which Messages Drove the Most Growth?</h3>
+        <p>Ranked by combined cross-platform subscriber growth during that week</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Message Title</th>
+            <th>Speaker</th>
+            <th>Date</th>
+            <th>Total Growth</th>
+            <th>YouTube ▲</th>
+            <th>Instagram ▲</th>
+            <th>Facebook ▲</th>
+            <th>Giving</th>
+          </tr>
+        </thead>
+        <tbody id="message-table-body"></tbody>
+      </table>
+    </div>
+
+    <!-- PRODUCTION INSIGHTS -->
+    <div class="section-title">Production Insights</div>
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-label">⚡ Fastest Week</div>
+        <div class="insight-val" id="i-fastest" style="color:var(--teal);">—</div>
+        <div class="insight-sub" id="i-fastest-msg">—</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-label">🐢 Longest Week</div>
+        <div class="insight-val" id="i-slowest" style="color:var(--accent);">—</div>
+        <div class="insight-sub" id="i-slowest-msg">—</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-label">📈 Trend</div>
+        <div class="insight-val" id="i-trend" style="color:var(--blue);">—</div>
+        <div class="insight-sub" id="i-trend-sub">Comparing first 4 vs last 4 weeks</div>
+      </div>
+    </div>
+
+    <!-- TIME vs GROWTH CHART -->
+    <div class="chart-grid full">
+      <div class="chart-card">
+        <h3>Production Time vs. Total Growth</h3>
+        <p>Does more time investment correlate with more followers? Each dot = one week.</p>
+        <div class="chart-wrap" style="height:280px;"><canvas id="chart-scatter"></canvas></div>
+      </div>
+    </div>
+
+  </div><!-- /dashboard -->
+</main>
+
+<footer>
+  <span>✝</span> Peace Church Online Growth Dashboard &nbsp;·&nbsp; Built for Kingdom Growth &nbsp;·&nbsp; Data refreshes on each page load
+</footer>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────
+// EDIT THIS LINE with your Google Sheet published CSV URL:
+const SHEET_CSV_URL = '/sheet-data';
+
+// ── UTILS ─────────────────────────────────────────────────────────────
+const fmt  = n => isNaN(n) ? '—' : Number(n).toLocaleString();
+const fmtK = n => {
+  if (isNaN(n) || n === '') return '—';
+  if (Math.abs(n) >= 1000) return (n/1000).toFixed(1) + 'K';
+  return Number(n).toLocaleString();
+};
+const fmtDollar = n => isNaN(n) ? '—' : '$' + Number(n).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
+const growthHtml = (val, suffix='') => {
+  if (val === '' || val === null || isNaN(val)) return `<span style="color:var(--muted)">— ${suffix}</span>`;
+  const n = Number(val);
+  if (n > 0) return `<span class="stat-growth pos">▲ +${fmt(n)} ${suffix} this week</span>`;
+  if (n < 0) return `<span class="stat-growth neg">▼ ${fmt(n)} ${suffix} this week</span>`;
+  return `<span class="stat-growth neu">→ No change ${suffix}</span>`;
+};
+const pillHtml = val => {
+  if (val === '' || val === null || isNaN(val)) return `<span class="growth-pill neu">—</span>`;
+  const n = Number(val);
+  if (n > 0) return `<span class="growth-pill pos">▲ +${fmt(n)}</span>`;
+  if (n < 0) return `<span class="growth-pill neg">▼ ${fmt(n)}</span>`;
+  return `<span class="growth-pill neu">→ 0</span>`;
+};
+
+// ── CHART DEFAULTS ────────────────────────────────────────────────────
+Chart.defaults.color = '#6b8cae';
+Chart.defaults.borderColor = '#1e3a5f';
+Chart.defaults.font.family = 'Inter';
+Chart.defaults.font.size = 11;
+
+const chartDefaults = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { position: 'top', labels: { boxWidth: 10, padding: 16, color: '#a0b8d0' } }, tooltip: { backgroundColor: '#0d1526', borderColor: '#1e3a5f', borderWidth: 1 } },
+  scales: {
+    x: { grid: { color: 'rgba(30,58,95,0.4)' }, ticks: { maxRotation: 45, color: '#6b8cae' } },
+    y: { grid: { color: 'rgba(30,58,95,0.4)' }, ticks: { color: '#6b8cae' } }
+  }
+};
+
+// ── MAIN ─────────────────────────────────────────────────────────────
+
+function connectSheet() {
+  const input = document.getElementById('sheet-url-input').value.trim();
+  if (!input) return;
+  sheetUrl = input;
+  localStorage.setItem('peaceChurchSheetUrl', input);
+  document.getElementById('setup-banner').style.display = 'none';
+  loadData();
+}
+
+function parseCSV(text) {
+  // Parse CSV properly handling quoted fields that contain newlines
+  const rows = [];
+  let cur = '', inQ = false, row = [];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQ && text[i+1] === '"') { cur += '"'; i++; } // escaped quote
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      row.push(cur.trim()); cur = '';
+    } else if ((ch === '\n') && !inQ) {
+      row.push(cur.trim()); cur = '';
+      rows.push(row); row = [];
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur || row.length) { row.push(cur.trim()); rows.push(row); }
+
+  // Find first data row: must have a date-like value in col 0 (contains /)
+  // Skip title row, header rows (which contain text like 'YouTube'), and empty/legend rows
+  const dataRows = rows.filter(r => {
+    const first = (r[0] || '').trim();
+    // Must look like a date: contains / or - and is shortish
+    return first.length > 0 && first.length < 15 && /[\/\-]/.test(first) && /\d/.test(first);
+  });
+
+  return dataRows;
+}
+
+// Clean number parser — handles $150.00, +3, -, empty, etc.
+const num = v => {
+  const s = String(v || '').trim().replace(/[$,]/g, '');
+  if (!s || s === '-' || s === '–') return NaN;
+  return parseFloat(s);
+};
+
+// Column accessors — matched to live sheet (25 columns, indices 0-24)
+// [0]Date [1]Title [2]Speaker [3]YTSubs [4]YTGrowth [5]YTFull [6]YTMsg
+// [7]IGFol [8]IGGrowth [9]IGViews [10]IGLikes [11]FBFol [12]FBGrowth [13]FBViews
+// [14]DCMem [15]DCGrowth [16]EMSub [17]EMGrowth [18]Giving [19]Prod
+// [20]7DayVideoViews [21]7DayShortsViews [22]AvgWatchTime [23]7DayLikes [24]YTComments
+const COL = {
+  date:         row => (row[0] || '').trim(),
+  msg:          row => (row[1] || '').trim(),
+  speaker:      row => (row[2] || '').trim(),
+  ytSubs:       row => num(row[3]),
+  ytGrowth:     row => num(row[4]),
+  ytFull:       row => num(row[5]),
+  ytMsg:        row => num(row[6]),
+  igFol:        row => num(row[7]),
+  igGrowth:     row => num(row[8]),
+  igViews:      row => num(row[9]),
+  igLikes:      row => num(row[10]),
+  fbFol:        row => num(row[11]),
+  fbGrowth:     row => num(row[12]),
+  fbViews:      row => num(row[13]),
+  dcMem:        row => num(row[14]),
+  dcGrowth:     row => num(row[15]),
+  emSub:        row => num(row[16]),
+  emGrowth:     row => num(row[17]),
+  giving:       row => num(row[18]),
+  prod:         row => num(row[19]),
+  ytVideoViews: row => num(row[20]),
+  ytShorts:     row => num(row[21]),
+  wtAll:        row => num(row[22]),
+  ytLikes:      row => num(row[23]),
+  ytComments:   row => num(row[24]),
+  emailOpen:    row => num(row[25]),
+};
+
+let chartInstances = {};
+function destroyCharts() {
+  Object.values(chartInstances).forEach(c => c.destroy());
+  chartInstances = {};
+}
+
+function renderDashboard(rows) {
+  destroyCharts();
+  if (!rows.length) { showError('No data rows found. Make sure you have data in your sheet.'); return; }
+
+  const latest = rows[rows.length - 1];
+  const labels = rows.map(r => COL.date(r));
+
+  // Helper: find most recent row where accessor returns a valid (non-NaN) value
+  const lastVal = (accessor) => {
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const v = accessor(rows[i]);
+      if (!isNaN(v) && v !== null && v !== undefined) return { val: v, date: COL.date(rows[i]) };
+    }
+    return { val: NaN, date: '—' };
+  };
+
+  // ── STAT CARDS ──
+  const ytSubs  = lastVal(COL.ytSubs);
+  document.getElementById('s-yt-subs').textContent = fmtK(ytSubs.val);
+  document.getElementById('g-yt-subs').innerHTML   = growthHtml(COL.ytGrowth(latest));
+
+  const igFol = lastVal(COL.igFol);
+  document.getElementById('s-ig').textContent      = fmtK(igFol.val);
+  document.getElementById('g-ig').innerHTML        = growthHtml(COL.igGrowth(latest));
+
+  const fbFol = lastVal(COL.fbFol);
+  document.getElementById('s-fb').textContent      = fmtK(fbFol.val);
+  document.getElementById('g-fb').innerHTML        = growthHtml(COL.fbGrowth(latest));
+
+  const dcMem = lastVal(COL.dcMem);
+  document.getElementById('s-dc').textContent      = fmtK(dcMem.val);
+  document.getElementById('g-dc').innerHTML        = growthHtml(COL.dcGrowth(latest));
+
+  const emSub = lastVal(COL.emSub);
+  document.getElementById('s-em').textContent      = fmtK(emSub.val);
+  document.getElementById('g-em').innerHTML        = growthHtml(COL.emGrowth(latest));
+
+  const totalGiving = rows.reduce((s,r) => s + (COL.giving(r)||0), 0);
+  document.getElementById('s-give').textContent = fmtDollar(totalGiving);
+  document.getElementById('g-give').innerHTML   = growthHtml(COL.giving(latest), '');
+
+  const avgProd = rows.reduce((s,r)=>s+(COL.prod(r)||0),0) / rows.filter(r=>!isNaN(COL.prod(r))).length;
+  document.getElementById('s-prod').textContent = isNaN(avgProd) ? '—' : avgProd.toFixed(1);
+
+  // New metrics — show most recent non-empty value
+  const ytVidViews = lastVal(COL.ytVideoViews);
+  document.getElementById('s-ytvidviews').textContent = fmtK(ytVidViews.val);
+  document.getElementById('g-ytvidviews').innerHTML   = `<span style="color:var(--muted)">${ytVidViews.date}</span>`;
+
+  const ytViews = lastVal(COL.ytShorts);
+  document.getElementById('s-shorts').textContent  = fmtK(ytViews.val);
+  document.getElementById('g-shorts').innerHTML    = `<span style="color:var(--muted)">${ytViews.date}</span>`;
+
+  const ytLikes = lastVal(COL.ytLikes);
+  document.getElementById('s-ytlikes').textContent = fmtK(ytLikes.val);
+  document.getElementById('g-ytlikes').innerHTML   = `<span style="color:var(--muted)">${ytLikes.date}</span>`;
+
+  const igLikes = lastVal(COL.igLikes);
+  document.getElementById('s-iglikes').textContent = fmtK(igLikes.val);
+  document.getElementById('g-iglikes').innerHTML   = `<span style="color:var(--muted)">${igLikes.date}</span>`;
+
+  const emailOpenVal = lastVal(COL.emailOpen);
+  document.getElementById('s-emailopen').textContent = isNaN(emailOpenVal.val) ? '—' : (emailOpenVal.val < 1 ? (emailOpenVal.val*100).toFixed(1) : emailOpenVal.val.toFixed(1)) + '%';
+  document.getElementById('g-emailopen').innerHTML   = `<span style="color:var(--muted)">${emailOpenVal.date}</span>`;
+
+  const wtAllVal = lastVal(COL.wtAll);
+  document.getElementById('s-wtall').textContent = isNaN(wtAllVal.val) ? '—' : wtAllVal.val.toFixed(1);
+  document.getElementById('g-wtall').innerHTML   = `<span style="color:var(--muted)">${wtAllVal.date}</span>`;
+
+  // ── GROWTH CHART ──
+  chartInstances.growth = new Chart(document.getElementById('chart-growth'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'YouTube ▲', data: rows.map(r=>COL.ytGrowth(r)||0), borderColor:'#ff4444', backgroundColor:'rgba(255,68,68,0.08)', tension:0.4, pointRadius:3 },
+        { label:'Instagram ▲', data: rows.map(r=>COL.igGrowth(r)||0), borderColor:'#e1306c', backgroundColor:'rgba(225,48,108,0.08)', tension:0.4, pointRadius:3 },
+        { label:'Facebook ▲', data: rows.map(r=>COL.fbGrowth(r)||0), borderColor:'#1877f2', backgroundColor:'rgba(24,119,242,0.08)', tension:0.4, pointRadius:3 },
+        { label:'Discord ▲', data: rows.map(r=>COL.dcGrowth(r)||0), borderColor:'#5865f2', backgroundColor:'rgba(88,101,242,0.08)', tension:0.4, pointRadius:3 },
+        { label:'Email ▲', data: rows.map(r=>COL.emGrowth(r)||0), borderColor:'#00c9a7', backgroundColor:'rgba(0,201,167,0.08)', tension:0.4, pointRadius:3 },
+      ]
+    },
+    options: { ...chartDefaults }
+  });
+
+  // ── VIEWS CHART ──
+  chartInstances.views = new Chart(document.getElementById('chart-views'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Full Service', data: rows.map(r=>COL.ytFull(r)||0), backgroundColor:'rgba(255,68,68,0.7)', borderRadius:4 },
+        { label:'Message Only', data: rows.map(r=>COL.ytMsg(r)||0), backgroundColor:'rgba(255,68,68,0.3)', borderRadius:4 },
+        { label:'7-Day Videos', data: rows.map(r=>COL.ytVideoViews(r)||0), backgroundColor:'rgba(244,175,28,0.6)', borderRadius:4 },
+        { label:'7-Day Shorts', data: rows.map(r=>COL.ytShorts(r)||0), backgroundColor:'rgba(244,175,28,0.3)', borderRadius:4 },
+      ]
+    },
+    options: { ...chartDefaults }
+  });
+
+  // ── GIVING CHART ──
+  chartInstances.giving = new Chart(document.getElementById('chart-giving'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label:'Giving ($)',
+        data: rows.map(r=>COL.giving(r)||0),
+        backgroundColor: rows.map((_,i)=>`rgba(245,166,35,${0.4+0.5*(i/rows.length)})`),
+        borderColor: 'rgba(245,166,35,0.8)', borderWidth: 1, borderRadius: 4,
+      }]
+    },
+    options: { ...chartDefaults, plugins: { ...chartDefaults.plugins, legend: { display: false } },
+      scales: { ...chartDefaults.scales, y: { ...chartDefaults.scales.y, ticks: { callback: v=>'$'+v.toLocaleString() } } }
+    }
+  });
+
+  // ── PROD TIME CHART ──
+  const prodData = rows.map(r=>COL.prod(r)||null);
+  const prodAvg  = prodData.filter(Boolean).reduce((a,b)=>a+b,0)/prodData.filter(Boolean).length;
+  chartInstances.prod = new Chart(document.getElementById('chart-prod'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'Hours', data:prodData, borderColor:'#9b59b6', backgroundColor:'rgba(155,89,182,0.1)', tension:0.4, pointRadius:4, fill:true },
+        { label:'Average', data:rows.map(()=>prodAvg), borderColor:'rgba(155,89,182,0.4)', borderDash:[6,4], pointRadius:0 },
+      ]
+    },
+    options: { ...chartDefaults }
+  });
+
+  // ── SCATTER CHART ──
+  const scatterData = rows.map(r=>({ x: COL.prod(r)||0, y: (COL.ytGrowth(r)||0)+(COL.igGrowth(r)||0)+(COL.fbGrowth(r)||0), label: COL.msg(r) }));
+  chartInstances.scatter = new Chart(document.getElementById('chart-scatter'), {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label:'Weekly Result',
+        data: scatterData,
+        backgroundColor:'rgba(74,158,255,0.6)',
+        pointRadius:7, pointHoverRadius:10,
+      }]
+    },
+    options: {
+      ...chartDefaults,
+      plugins: {
+        ...chartDefaults.plugins,
+        legend:{ display:false },
+        tooltip:{ ...chartDefaults.plugins.tooltip, callbacks:{ label: ctx=>`${ctx.raw.label||'Week'}: ${ctx.raw.x}hrs, +${ctx.raw.y} followers` } }
+      },
+      scales: {
+        x: { ...chartDefaults.scales.x, title:{ display:true, text:'Production Time (hours)', color:'#6b8cae' } },
+        y: { ...chartDefaults.scales.y, title:{ display:true, text:'Total Follower Growth', color:'#6b8cae' } }
+      }
+    }
+  });
+
+  // ── MESSAGE TABLE ──
+  const scored = rows.map(r => ({
+    date:    COL.date(r),
+    msg:     COL.msg(r),
+    speaker: COL.speaker(r),
+    ytG:     COL.ytGrowth(r)||0,
+    igG:     COL.igGrowth(r)||0,
+    fbG:     COL.fbGrowth(r)||0,
+    giving:  COL.giving(r)||0,
+    total:   (COL.ytGrowth(r)||0)+(COL.igGrowth(r)||0)+(COL.fbGrowth(r)||0),
+  })).sort((a,b)=>b.total-a.total);
+
+  const tbody = document.getElementById('message-table-body');
+  tbody.innerHTML = scored.slice(0,10).map((r,i)=>{
+    const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-n';
+    return `<tr>
+      <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+      <td style="font-weight:500;">${r.msg||'—'}</td>
+      <td style="color:var(--muted);font-size:11px;">${r.speaker||'—'}</td>
+      <td style="color:var(--muted);font-size:11px;">${r.date}</td>
+      <td>${pillHtml(r.total)}</td>
+      <td>${pillHtml(r.ytG)}</td>
+      <td>${pillHtml(r.igG)}</td>
+      <td>${pillHtml(r.fbG)}</td>
+      <td style="color:var(--gold);">${fmtDollar(r.giving)}</td>
+    </tr>`;
+  }).join('');
+
+  // ── PRODUCTION INSIGHTS ──
+  const prodRows = rows.filter(r=>!isNaN(COL.prod(r))&&COL.prod(r)>0);
+  if (prodRows.length) {
+    const fastest = prodRows.reduce((a,b)=>COL.prod(a)<COL.prod(b)?a:b);
+    const slowest = prodRows.reduce((a,b)=>COL.prod(a)>COL.prod(b)?a:b);
+    document.getElementById('i-fastest').textContent = COL.prod(fastest).toFixed(1)+'h';
+    document.getElementById('i-fastest-msg').textContent = COL.msg(fastest)||COL.date(fastest);
+    document.getElementById('i-slowest').textContent = COL.prod(slowest).toFixed(1)+'h';
+    document.getElementById('i-slowest-msg').textContent = COL.msg(slowest)||COL.date(slowest);
+
+    if (prodRows.length >= 8) {
+      const n = Math.min(4, Math.floor(prodRows.length/2));
+      const firstN = prodRows.slice(0,n).reduce((s,r)=>s+COL.prod(r),0)/n;
+      const lastN  = prodRows.slice(-n).reduce((s,r)=>s+COL.prod(r),0)/n;
+      const diff   = lastN - firstN;
+      document.getElementById('i-trend').textContent    = (diff<0?'Getting Faster':'Getting Slower');
+      document.getElementById('i-trend-sub').textContent= `${Math.abs(diff).toFixed(1)}h ${diff<0?'less':'more'} than when you started`;
+    } else {
+      document.getElementById('i-trend').textContent = 'Need more data';
+      document.getElementById('i-trend-sub').textContent = 'Track 8+ weeks to see trend';
+    }
+  }
+
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('status-text').textContent = `${rows.length} weeks tracked`;
+  document.getElementById('last-updated').textContent = `Last entry: ${COL.date(latest)}`;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function loadData() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('error-msg').style.display = 'none';
+
+  try {
+    const resp = await fetch(SHEET_CSV_URL, { cache: 'no-cache' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    if (!text || text.trim().length < 20) throw new Error('Empty response');
+    const rows = parseCSV(text);
+    if (!rows.length) throw new Error('No data rows found');
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('status-text').textContent = rows.length + ' weeks tracked';
+    document.getElementById('last-updated').textContent = 'Last entry: ' + COL.date(rows[rows.length - 1]);
+    renderDashboard(rows);
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('status-text').textContent = 'Connection failed';
+    showError('Could not load data: ' + e.message + '. Please try the Refresh button.');
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
