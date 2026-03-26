@@ -431,6 +431,18 @@
         <div class="stat-growth" id="g-shorts">this week</div>
       </div>
       <div class="stat-card yt">
+        <span class="stat-icon">📅</span>
+        <div class="stat-label">28-Day Video Views</div>
+        <div class="stat-value" id="s-28vidviews">—</div>
+        <div class="stat-growth" id="g-28vidviews">last 4 weeks</div>
+      </div>
+      <div class="stat-card yt">
+        <span class="stat-icon">📅</span>
+        <div class="stat-label">28-Day Shorts Views</div>
+        <div class="stat-value" id="s-28shortsviews">—</div>
+        <div class="stat-growth" id="g-28shortsviews">last 4 weeks</div>
+      </div>
+      <div class="stat-card yt">
         <span class="stat-icon">👍</span>
         <div class="stat-label">7-Day Channel Likes</div>
         <div class="stat-value" id="s-ytlikes">—</div>
@@ -477,7 +489,7 @@
         <div class="chart-wrap"><canvas id="chart-giving"></canvas></div>
       </div>
       <div class="chart-card">
-        <h3>Production Time Trend</h3>
+        <h3>Church Online Production Time</h3>
         <p>Hours spent creating content — are you getting faster?</p>
         <div class="chart-wrap"><canvas id="chart-prod"></canvas></div>
       </div>
@@ -509,6 +521,15 @@
     </div>
 
     <!-- PRODUCTION INSIGHTS -->
+    <!-- Watch Time Chart -->
+    <div class="chart-grid">
+      <div class="chart-card" style="grid-column: 1 / -1;">
+        <h3>Average Watch Time Over Time</h3>
+        <p>Channel-wide average watch time per week — are viewers watching longer?</p>
+        <div class="chart-wrap"><canvas id="chart-watchtime"></canvas></div>
+      </div>
+    </div>
+
     <div class="section-title">Production Insights</div>
     <div class="insight-grid">
       <div class="insight-card">
@@ -729,6 +750,16 @@ function renderDashboard(rows) {
   document.getElementById('s-shorts').textContent  = fmtK(ytViews.val);
   document.getElementById('g-shorts').innerHTML    = `<span style="color:var(--muted)">${ytViews.date}</span>`;
 
+  // 28-day totals — sum last 4 non-empty values
+  const last4Vid    = rows.map(r=>COL.ytVideoViews(r)).filter(v=>!isNaN(v)&&v>0).slice(-4);
+  const last4Shorts = rows.map(r=>COL.ytShorts(r)).filter(v=>!isNaN(v)&&v>0).slice(-4);
+  const sum28Vid    = last4Vid.reduce((a,b)=>a+b, 0);
+  const sum28Shorts = last4Shorts.reduce((a,b)=>a+b, 0);
+  document.getElementById('s-28vidviews').textContent    = fmtK(sum28Vid);
+  document.getElementById('g-28vidviews').innerHTML      = `<span style="color:var(--muted)">${last4Vid.length} weeks of data</span>`;
+  document.getElementById('s-28shortsviews').textContent = fmtK(sum28Shorts);
+  document.getElementById('g-28shortsviews').innerHTML   = `<span style="color:var(--muted)">${last4Shorts.length} weeks of data</span>`;
+
   const ytLikes = lastVal(COL.ytLikes);
   document.getElementById('s-ytlikes').textContent = fmtK(ytLikes.val);
   document.getElementById('g-ytlikes').innerHTML   = `<span style="color:var(--muted)">${ytLikes.date}</span>`;
@@ -810,6 +841,34 @@ function renderDashboard(rows) {
 
   // ── SCATTER CHART ──
   const scatterData = rows.map(r=>({ x: COL.prod(r)||0, y: (COL.ytGrowth(r)||0)+(COL.igGrowth(r)||0)+(COL.fbGrowth(r)||0), label: COL.msg(r) }));
+  // ── WATCH TIME CHART ──
+  const wtData = rows.map(r => isNaN(COL.wtAll(r)) ? null : COL.wtAll(r));
+  chartInstances.watchtime = new Chart(document.getElementById('chart-watchtime'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Avg Watch Time (mins)',
+        data: wtData,
+        borderColor: '#f4af1c',
+        backgroundColor: 'rgba(244,175,28,0.1)',
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: '#f4af1c',
+        fill: true,
+        spanGaps: true,
+      }]
+    },
+    options: {
+      ...chartDefaults,
+      plugins: { ...chartDefaults.plugins, legend: { display: false } },
+      scales: {
+        ...chartDefaults.scales,
+        y: { ...chartDefaults.scales.y, ticks: { ...chartDefaults.scales.y.ticks, callback: v => v + ' min' } }
+      }
+    }
+  });
+
   chartInstances.scatter = new Chart(document.getElementById('chart-scatter'), {
     type: 'scatter',
     data: {
