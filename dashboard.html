@@ -412,12 +412,6 @@
         <div class="stat-value" id="s-give">—</div>
         <div class="stat-growth" id="g-give">—</div>
       </div>
-      <div class="stat-card pt">
-        <span class="stat-icon">⏱️</span>
-        <div class="stat-label">Avg Production Time</div>
-        <div class="stat-value" id="s-prod">—</div>
-        <div class="stat-growth" id="g-prod">hrs / week</div>
-      </div>
       <div class="stat-card yt">
         <span class="stat-icon">▶️</span>
         <div class="stat-label">7-Day Video Views</div>
@@ -429,6 +423,12 @@
         <div class="stat-label">7-Day Shorts Views</div>
         <div class="stat-value" id="s-shorts">—</div>
         <div class="stat-growth" id="g-shorts">this week</div>
+      </div>
+      <div class="stat-card yt">
+        <span class="stat-icon">👍</span>
+        <div class="stat-label">7-Day Channel Likes</div>
+        <div class="stat-value" id="s-ytlikes">—</div>
+        <div class="stat-growth" id="g-ytlikes">this week</div>
       </div>
       <div class="stat-card yt">
         <span class="stat-icon">📅</span>
@@ -443,10 +443,10 @@
         <div class="stat-growth" id="g-28shortsviews">last 4 weeks</div>
       </div>
       <div class="stat-card yt">
-        <span class="stat-icon">👍</span>
-        <div class="stat-label">7-Day Channel Likes</div>
-        <div class="stat-value" id="s-ytlikes">—</div>
-        <div class="stat-growth" id="g-ytlikes">this week</div>
+        <span class="stat-icon">📅</span>
+        <div class="stat-label">28-Day Channel Likes</div>
+        <div class="stat-value" id="s-28likes">—</div>
+        <div class="stat-growth" id="g-28likes">last 4 weeks</div>
       </div>
       <div class="stat-card ig">
         <span class="stat-icon">❤️</span>
@@ -465,6 +465,24 @@
         <div class="stat-label">Avg Watch Time — All YouTube</div>
         <div class="stat-value" id="s-wtall">—</div>
         <div class="stat-growth" id="g-wtall">mins this week</div>
+      </div>
+      <div class="stat-card yt">
+        <span class="stat-icon">🔴</span>
+        <div class="stat-label">YouTube Live (Peak)</div>
+        <div class="stat-value" id="s-ytlive">—</div>
+        <div class="stat-growth" id="g-ytlive">viewers this week</div>
+      </div>
+      <div class="stat-card dc">
+        <span class="stat-icon">⛪</span>
+        <div class="stat-label">Platform Live (Peak)</div>
+        <div class="stat-value" id="s-pllive">—</div>
+        <div class="stat-growth" id="g-pllive">viewers this week</div>
+      </div>
+      <div class="stat-card pt">
+        <span class="stat-icon">⏱️</span>
+        <div class="stat-label">Time on Church Online</div>
+        <div class="stat-value" id="s-prod">—</div>
+        <div class="stat-growth" id="g-prod">hrs / week avg</div>
       </div>
     </div>
 
@@ -657,38 +675,40 @@ const num = v => {
   return parseFloat(s);
 };
 
-// Column accessors — matched to live sheet (25 columns, indices 0-24)
+// Column accessors — matched to live sheet (27 columns, indices 0-26)
 // [0]Date [1]Title [2]Speaker [3]YTSubs [4]YTGrowth [5]YTFull [6]YTMsg
 // [7]IGFol [8]IGGrowth [9]IGViews [10]IGLikes [11]FBFol [12]FBGrowth [13]FBViews
 // [14]DCMem [15]DCGrowth [16]EMSub [17]EMGrowth [18]Giving [19]Prod
 // [20]7DayVideoViews [21]7DayShortsViews [22]AvgWatchTime [23]7DayLikes [24]YTComments
+// [25]YTLiveViewers [26]PlatformLiveViewers
 const COL = {
-  date:         row => (row[0] || '').trim(),
-  msg:          row => (row[1] || '').trim(),
-  speaker:      row => (row[2] || '').trim(),
-  ytSubs:       row => num(row[3]),
-  ytGrowth:     row => num(row[4]),
-  ytFull:       row => num(row[5]),
-  ytMsg:        row => num(row[6]),
-  igFol:        row => num(row[7]),
-  igGrowth:     row => num(row[8]),
-  igViews:      row => num(row[9]),
-  igLikes:      row => num(row[10]),
-  fbFol:        row => num(row[11]),
-  fbGrowth:     row => num(row[12]),
-  fbViews:      row => num(row[13]),
-  dcMem:        row => num(row[14]),
-  dcGrowth:     row => num(row[15]),
-  emSub:        row => num(row[16]),
-  emGrowth:     row => num(row[17]),
-  giving:       row => num(row[18]),
-  prod:         row => num(row[19]),
-  ytVideoViews: row => num(row[20]),
-  ytShorts:     row => num(row[21]),
-  wtAll:        row => num(row[22]),
-  ytLikes:      row => num(row[23]),
-  ytComments:   row => num(row[24]),
-  emailOpen:    row => num(row[25]),
+  date:           row => (row[0] || '').trim(),
+  msg:            row => (row[1] || '').trim(),
+  speaker:        row => (row[2] || '').trim(),
+  ytSubs:         row => num(row[3]),
+  ytGrowth:       row => num(row[4]),
+  ytFull:         row => num(row[5]),
+  ytMsg:          row => num(row[6]),
+  igFol:          row => num(row[7]),
+  igGrowth:       row => num(row[8]),
+  igViews:        row => num(row[9]),
+  igLikes:        row => num(row[10]),
+  fbFol:          row => num(row[11]),
+  fbGrowth:       row => num(row[12]),
+  fbViews:        row => num(row[13]),
+  dcMem:          row => num(row[14]),
+  dcGrowth:       row => num(row[15]),
+  emSub:          row => num(row[16]),
+  emGrowth:       row => num(row[17]),
+  giving:         row => num(row[18]),
+  prod:           row => num(row[19]),
+  ytVideoViews:   row => num(row[20]),
+  ytShorts:       row => num(row[21]),
+  wtAll:          row => num(row[22]),
+  ytLikes:        row => num(row[23]),
+  ytComments:     row => num(row[24]),
+  ytLiveViewers:  row => num(row[25]),
+  plLiveViewers:  row => num(row[26]),
 };
 
 let chartInstances = {};
@@ -763,6 +783,21 @@ function renderDashboard(rows) {
   const ytLikes = lastVal(COL.ytLikes);
   document.getElementById('s-ytlikes').textContent = fmtK(ytLikes.val);
   document.getElementById('g-ytlikes').innerHTML   = `<span style="color:var(--muted)">${ytLikes.date}</span>`;
+
+  // 28-day likes
+  const last4Likes = rows.map(r=>COL.ytLikes(r)).filter(v=>!isNaN(v)&&v>0).slice(-4);
+  const sum28Likes = last4Likes.reduce((a,b)=>a+b, 0);
+  document.getElementById('s-28likes').textContent = fmtK(sum28Likes);
+  document.getElementById('g-28likes').innerHTML   = `<span style="color:var(--muted)">${last4Likes.length} weeks of data</span>`;
+
+  // Live viewers
+  const ytLive = lastVal(COL.ytLiveViewers);
+  document.getElementById('s-ytlive').textContent = isNaN(ytLive.val) ? '—' : fmt(ytLive.val);
+  document.getElementById('g-ytlive').innerHTML   = `<span style="color:var(--muted)">${ytLive.date}</span>`;
+
+  const plLive = lastVal(COL.plLiveViewers);
+  document.getElementById('s-pllive').textContent = isNaN(plLive.val) ? '—' : fmt(plLive.val);
+  document.getElementById('g-pllive').innerHTML   = `<span style="color:var(--muted)">${plLive.date}</span>`;
 
   const igLikes = lastVal(COL.igLikes);
   document.getElementById('s-iglikes').textContent = fmtK(igLikes.val);
