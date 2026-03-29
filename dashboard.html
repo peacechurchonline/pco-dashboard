@@ -11,7 +11,7 @@
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
   @font-face {
     font-family: 'SSNicksonOne';
-    src: url('S_S_Nickson_One.otf') format('opentype');
+    src: url('S%20S%20Nickson%20One.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
   }
@@ -709,6 +709,7 @@ const COL = {
   ytComments:     row => num(row[24]),
   ytLiveViewers:  row => num(row[25]),
   plLiveViewers:  row => num(row[26]),
+  emailOpen:      row => num(row[27]),
 };
 
 let chartInstances = {};
