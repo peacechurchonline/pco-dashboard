@@ -494,6 +494,30 @@
         <div class="stat-value" id="s-wtall">—</div>
         <div class="stat-growth" id="g-wtall">mins this week</div>
       </div>
+      <div class="stat-card yt" style="border-top-color:#00c9a7;">
+        <span class="stat-icon">🎬</span>
+        <div class="stat-label">Moments Published</div>
+        <div class="stat-value" id="s-mmtotal">—</div>
+        <div class="stat-growth" id="g-mmtotal">lifetime</div>
+      </div>
+      <div class="stat-card yt" style="border-top-color:#00c9a7;">
+        <span class="stat-icon">▶️</span>
+        <div class="stat-label">Message Moments Views</div>
+        <div class="stat-value" id="s-mmviews">—</div>
+        <div class="stat-growth" id="g-mmviews">7-day</div>
+      </div>
+      <div class="stat-card yt" style="border-top-color:#00c9a7;">
+        <span class="stat-icon">📅</span>
+        <div class="stat-label">28-Day Moments Views</div>
+        <div class="stat-value" id="s-mm28">—</div>
+        <div class="stat-growth" id="g-mm28">last 4 weeks</div>
+      </div>
+      <div class="stat-card yt" style="border-top-color:#00c9a7;">
+        <span class="stat-icon">📊</span>
+        <div class="stat-label">Avg Views per Moment</div>
+        <div class="stat-value" id="s-mmavg">—</div>
+        <div class="stat-growth" id="g-mmavg">all time</div>
+      </div>
       <div class="stat-card yt">
         <span class="stat-icon">🔴</span>
         <div class="stat-label">YouTube Live (Peak)</div>
@@ -737,7 +761,10 @@ const COL = {
   ytComments:     row => num(row[24]),
   ytLiveViewers:  row => num(row[25]),
   plLiveViewers:  row => num(row[26]),
-  emailOpen:      row => num(row[27]),
+  mmViews:        row => num(row[27]),
+  mmTotal:        row => num(row[28]),
+  mmWatchTime:    row => num(row[29]),
+  emailOpen:      row => num(row[30]),
 };
 
 let chartInstances = {};
@@ -839,6 +866,28 @@ function renderDashboard(rows) {
   const wtAllVal = lastVal(COL.wtAll);
   document.getElementById('s-wtall').textContent = isNaN(wtAllVal.val) ? '—' : wtAllVal.val.toFixed(1);
   document.getElementById('g-wtall').innerHTML   = `<span style="color:var(--muted)">${wtAllVal.date}</span>`;
+
+  // Message Moments stats
+  const mmViewsVal = lastVal(COL.mmViews);
+  document.getElementById('s-mmviews').textContent = fmtK(mmViewsVal.val);
+  document.getElementById('g-mmviews').innerHTML   = `<span style="color:var(--muted)">${mmViewsVal.date}</span>`;
+
+  const mmTotalVal = lastVal(COL.mmTotal);
+  document.getElementById('s-mmtotal').textContent = isNaN(mmTotalVal.val) ? '—' : fmt(mmTotalVal.val);
+  document.getElementById('g-mmtotal').innerHTML   = `<span style="color:var(--muted)">moments published</span>`;
+
+  const last4MM = rows.map(r=>COL.mmViews(r)).filter(v=>!isNaN(v)&&v>0).slice(-4);
+  const sum28MM = last4MM.reduce((a,b)=>a+b, 0);
+  document.getElementById('s-mm28').textContent = fmtK(sum28MM);
+  document.getElementById('g-mm28').innerHTML   = `<span style="color:var(--muted)">${last4MM.length} weeks of data</span>`;
+
+  const allMMViews = rows.map(r=>COL.mmViews(r)).filter(v=>!isNaN(v)&&v>0);
+  const totalMMPublished = isNaN(mmTotalVal.val) ? allMMViews.length : mmTotalVal.val;
+  const avgMMViews = totalMMPublished > 0 ? allMMViews.reduce((a,b)=>a+b,0) / totalMMPublished : NaN;
+  const goalColor = !isNaN(avgMMViews) && avgMMViews >= 50 ? 'var(--success)' : 'var(--accent)';
+  document.getElementById('s-mmavg').textContent = isNaN(avgMMViews) ? '—' : avgMMViews.toFixed(0);
+  document.getElementById('s-mmavg').style.color = goalColor;
+  document.getElementById('g-mmavg').innerHTML   = `<span style="color:var(--muted)">goal: 50+ views</span>`;
 
   // ── GROWTH CHART ──
   chartInstances.growth = new Chart(document.getElementById('chart-growth'), {
