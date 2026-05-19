@@ -609,16 +609,31 @@ function renderDashboard(rows){
     options:{...cDef,plugins:{...cDef.plugins,legend:{display:false}}}
   });
 
+  const msgTitles = rows.map(r => COL.msg(r) || COL.date(r));
+  const titleTooltip = {
+    plugins: {
+      ...cDef.plugins,
+      legend: { display: false },
+      tooltip: {
+        ...cDef.plugins.tooltip,
+        callbacks: {
+          title: ctx => msgTitles[ctx[0].dataIndex] || ctx[0].label,
+          label: ctx => ' ' + (ctx.raw >= 1000 ? (ctx.raw/1000).toFixed(1)+'K' : ctx.raw) + ' views'
+        }
+      }
+    }
+  };
+
   charts.full=new Chart(document.getElementById('chart-fullservice'),{
     type:'bar',
     data:{labels,datasets:[{label:'Full Service Views',data:rows.map(r=>COL.ytFull(r)||null),backgroundColor:'rgba(74,158,255,.7)',borderRadius:4}]},
-    options:{...cDef,plugins:{...cDef.plugins,legend:{display:false}}}
+    options:{...cDef,...titleTooltip}
   });
 
   charts.msg=new Chart(document.getElementById('chart-msgonly'),{
     type:'bar',
     data:{labels,datasets:[{label:'Message-Only Views',data:rows.map(r=>COL.ytMsg(r)||null),backgroundColor:'rgba(74,158,255,.4)',borderRadius:4}]},
-    options:{...cDef,plugins:{...cDef.plugins,legend:{display:false}}}
+    options:{...cDef,...titleTooltip}
   });
 
   charts.shorts=new Chart(document.getElementById('chart-shorts'),{
